@@ -21,14 +21,16 @@
 (defn status? [this k]
   (= k (current-event-type (-> this :state deref :event-log))))
 
+(defn get-subscription [args]
+  (subscribe (select-keys args [:products :channels])))
+
 (defrecord GDAXDataStream [args]
 
   Lifecycle
   (start [this]
-    (let [state (atom {})
-          subscription (subscribe (select-keys args [:products :channels]))]
-      (swap! state #(assoc % :subscription subscription :event-log []))
-      (start-event-log-appender! state)
+    (let [state (atom {:subscription (get-subscription args)
+                       :event-log []})
+          _ (start-event-log-appender! state)]
       (assoc this :state state)))
 
   (stop [this]
