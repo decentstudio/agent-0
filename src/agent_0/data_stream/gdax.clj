@@ -6,9 +6,7 @@
 
 (defn get-event-channels [state]
   (let [get-event-ch #(-> state deref :subscription %)]
-    [(get-event-ch :connected)
-     (get-event-ch :closed)
-     (get-event-ch :errored)]))
+    (into [] (map get-event-ch [:connected :closed :errored]))))
 
 (defn start-event-log-appender! [state]
   (let [event-channels (get-event-channels state)]
