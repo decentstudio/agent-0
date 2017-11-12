@@ -17,8 +17,11 @@
         (swap! state update-in [:event-log] conj e)
         (recur (alts! event-channels))))))
 
-(defn current-event-type [state]
-  (-> state deref :event-log last second))
+(defn current-event-type [event-log]
+  (-> event-log last second))
+
+(defn status? [this k]
+  (= k (current-event-type (-> this :state deref :event-log))))
 
 (defrecord GDAXDataStream [args]
 
@@ -36,8 +39,8 @@
   DataStream
   (stream [this] (-> this :state deref :subscription :feed))
 
-  (connected? [this] (= :connected (current-event-type (:state this))))
+  (connected? [this] (status? this :connected))
 
-  (closed? [this]    (= :closed    (current-event-type (:state this))))
+  (closed? [this] (status? this :closed))
 
-  (error? [this]     (= :error     (current-event-type (:state this)))))
+  (error? [this] (status? this :error)))
